@@ -5,55 +5,14 @@ __copyright__ = "Copyright 2015, Elaborated Networks GmbH"
 __license__ = "MIT License"
 
 
-from libc.stdlib cimport malloc, free
-cimport mbedtls._md as _md
 import mbedtls._md as _md
 from mbedtls.exceptions import *
 
 
+Hash = _md.Hash
+
 algorithms_guaranteed = _md.algorithms_guaranteed
 algorithms_available = _md.algorithms_available
-
-
-cdef class Hash(_md.MDBase):
-
-    """Wrap and encapsulate hash calculations.
-
-    This class is a wrapper for the hash calculations in the md module
-    of mbed TLS.  The interface follows the recommendation from PEP 452
-    for unkeyed hashes.
-
-    Parameters:
-        name (str): The MD name known to mbed TLS.
-
-    Attributes:
-        digest_size (int): The size of the message digest, in bytes.
-        block_size (int): The internal block size of the hash
-            algorithm in bytes.
-        name (str): The name of the message digest.
-
-    """
-    def __init__(self, name, buffer=None):
-        super().__init__(name, buffer, 0)
-        check_error(_md.mbedtls_md_starts(&self._ctx))
-        self.update(buffer)
-
-    def update(self, const unsigned char[:] buffer):
-        """Update the hash object with the `buffer`."""
-        if buffer is None or buffer.size == 0:
-            return
-        check_error(
-            _md.mbedtls_md_update(&self._ctx, &buffer[0], buffer.size))
-
-    cdef _finish(self, unsigned char *output):
-        """Return the digest output of `message`."""
-        return _md.mbedtls_md_finish(&self._ctx, output)
-
-    def copy(self):
-        """Return a copy ("clone") of the hash object."""
-        obj = Hash(self.name)
-        check_error(_md.mbedtls_md_clone(&obj._ctx, &self._ctx))
-        return obj
 
 
 def new(name, buffer=None):
