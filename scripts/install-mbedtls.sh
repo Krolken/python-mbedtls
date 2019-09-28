@@ -23,20 +23,23 @@ else
 fi
 
 
+mkdir -p $destdir
 mkdir -p "$destdir"
-cd "$srcdir"
-uname -s
+builddir="$destdir.build"
+rm -rf $builddir
+cp -r $srcdir $builddir
+cd $builddir
+
 if [ "$(uname -s)" = "Linux" ]; then
 	sed -i.bk -re "s (^DESTDIR=).* \\1$destdir g" Makefile
 else
 	sed -i.bk -E "s (^DESTDIR=).* \\1$destdir g" Makefile
 fi
 
-[ -d "build" ] && rm -ri build
-mkdir build
-cd build
-
-CFLAGS="-DMBEDTLS_ARIA_C=ON" \
+CFLAGS=\
+" $CFLAGS"\
+" -DMBEDTLS_ARIA_C=ON"\
+"" \
 SHARED="ON" \
-make -C .. -j lib
-make -C .. -j install
+make -j lib
+make -j install
