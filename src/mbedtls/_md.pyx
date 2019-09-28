@@ -8,6 +8,7 @@ __license__ = "MIT License"
 cimport mbedtls._md as _md
 from libc.stdlib cimport malloc, free
 import binascii
+import mbedtls
 from mbedtls.exceptions import *
 
 
@@ -68,6 +69,8 @@ cdef class MDBase:
     """
     def __init__(self, name, _hmac):
         name_ = name.upper().encode("ascii", "strict")
+        if not mbedtls.has_feature(name):
+            raise AttributeError("%s is not supported" % name)
         cdef char *c_name = name_
         self._info = _md.mbedtls_md_info_from_string(c_name)
         check_error(_md.mbedtls_md_setup(&self._ctx, self._info, _hmac))
